@@ -19,6 +19,8 @@ I already have the same site covered with Playwright in [`saucedemo-playwright-c
 
 Practical consequence in this repo: `sort_by()` in `pages/inventory_page.py` calls Selenium's `Select` helper on a raw `<select>` element, where the Playwright version just calls `.selectOption()` directly on a Locator. Same intent (pick a dropdown option), different API shape, because Playwright's locators already carry the retry/wait logic that Selenium's plain `WebElement` doesn't.
 
+That last point wasn't theoretical: it caused two real, reproducible flakes while building this suite. `add_item_to_cart_by_name()` clicked a button before it was interactable, silently missing the click and leaving the cart badge at "1" instead of "2". Logging in and immediately reading the inventory list sometimes ran against the still-loading login page and came back empty. Both are fixed with explicit `WebDriverWait` calls (`element_to_be_clickable`, `presence_of_element_located`), because in Selenium that wait is the test's job, not the driver's.
+
 ## Run it yourself
 
 ```

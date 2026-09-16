@@ -1,4 +1,7 @@
 import pytest
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.inventory_page import InventoryPage
 
@@ -8,6 +11,12 @@ def logged_in_driver(driver):
     login = LoginPage(driver)
     login.goto()
     login.login("standard_user", "secret_sauce")
+    # login.login() clicks the button and returns immediately; it doesn't
+    # wait for the resulting navigation to finish rendering, unlike
+    # Playwright's auto-waiting actions. Without this, the very first
+    # find_elements() call in a test can run against the still-loading
+    # login page and come back empty.
+    WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "inventory_item")))
     return driver
 
 
